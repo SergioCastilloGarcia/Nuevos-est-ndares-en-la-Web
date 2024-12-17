@@ -33,7 +33,7 @@ function App() {
         const signer = provider.getSigner();
 
         myContract.current = new Contract(
-          '0x52611f8732F554a11e12aB51faa793EAeEFA0383',
+          '0x610C9B2C2923422286a983180eA3Ace721A87BA3',
           myContractManifest.abi,
           signer
         );
