@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@metamask/detect-provider": "^1.2.0",
+    "bootstrap": "^4.6.0",
+    "ethers": "^5.0.32"
+  }
+}
