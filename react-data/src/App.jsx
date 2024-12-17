@@ -33,7 +33,7 @@ function App() {
         const signer = provider.getSigner();
 
         myContract.current = new Contract(
-          '0x610C9B2C2923422286a983180eA3Ace721A87BA3',
+          '0xC0dE7fd8a06cCC74626721d39dd3ee2144F58E10',
           myContractManifest.abi,
           signer
         );
@@ -42,17 +42,28 @@ function App() {
     } catch (error) { }
   }
   let clickBuyTiket = async (i) => {
-    const tx = await myContract.current.buyTiket(i);
+    const tx = await myContract.current.buyTiket(i, {
+      value: ethers.utils.parseEther("0.02"),
+      gasLimit: 6721975,
+      gasPrice: 20000000000,
+
+    });
+
     await tx.wait();
 
     const tiketsUpdated = await myContract.current.getTikets();
     setTikets(tiketsUpdated);
+  }
+  let withdrawBalance = async () => {
+    const tx = await myContract.current.transferBalanceToAdmin();
   }
 
 
   return (
     <div>
       <h1>Tikets store</h1>
+      <button onClick={() => withdrawBalance()}>Withdraw Balance</button>
+
       <ul>
         {tikets.map((address, i) =>
           <li>Tiket {i} comprado por {address}
