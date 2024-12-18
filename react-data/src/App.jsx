@@ -33,7 +33,7 @@ function App() {
         const signer = provider.getSigner();
 
         myContract.current = new Contract(
-          '0xC0dE7fd8a06cCC74626721d39dd3ee2144F58E10',
+          '0x23FDBF472ec9Bd4201Dd8b6774670bDF901Df2D0',
           myContractManifest.abi,
           signer
         );
@@ -57,6 +57,13 @@ function App() {
   let withdrawBalance = async () => {
     const tx = await myContract.current.transferBalanceToAdmin();
   }
+  let changeAdmin = async (e) => {
+    //evita que avance a la página del formulario
+    e.preventDefault();
+
+    const adminAdress = e.target.elements[0].value;
+    await myContract.current.changeAdmin(adminAdress);
+  };
 
 
   return (
@@ -73,6 +80,12 @@ function App() {
           </li>
         )}
       </ul>
+
+      <form className="form-inline" onSubmit={(e) => changeAdmin(e)}>
+        <input type="text" />
+        <button type="submit" > Donate </button>
+      </form>
+
     </div>
   )
 
