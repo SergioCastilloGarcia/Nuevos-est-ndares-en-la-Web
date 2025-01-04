@@ -11,6 +11,8 @@ function Bank() {
   const bank = useRef(null);
   const [bnbBalance, setBnbBalance] = useState("0");
   const [tokenInterest, setTokenInterest] = useState("0");
+  const [bnbBalanceSpecial, setBnbBalanceSpecial] = useState("0");
+  const [tokenInterestSpecial, setTokenInterestSpecial] = useState("0");
 
 
   useEffect(() => {
@@ -31,7 +33,7 @@ function Bank() {
       provider = new ethers.providers.Web3Provider(provider);
       const signer = provider.getSigner();
       bank.current = new Contract(
-        "0x5c649De39ed9cCe816694E15e681EA91311A4e29",
+        "0xB296b3141Dcc96E80DeAd1e144d547846DbA1500",
         bankManifest.abi,
         signer
       );
@@ -78,21 +80,74 @@ function Bank() {
       // Consultar interés generado en tokens
       const tokenInterest = await bank.current.calculateInterest();
       setTokenInterest(ethers.utils.formatUnits(tokenInterest, 18)); // Reducir escala de wei a entero
+    } catch (error) {
+      console.error("Error fetching balances:", error);
+    }
+    try {
 
+      // Consultar saldo en BNB depositado
+      const bnbBalanceSpecial = await bank.current.getDepositBalanceSpecial();
+      setBnbBalanceSpecial(ethers.utils.formatEther(bnbBalanceSpecial));
+
+      // Consultar interés generado en tokens
+      const tokenInterestSpecial = await bank.current.calculateInterestSpecial();
+      setTokenInterestSpecial(ethers.utils.formatUnits(tokenInterestSpecial, 18)); // Reducir escala de wei a entero
     } catch (error) {
       console.error("Error fetching balances:", error);
     }
   };
+  let onSubmitSpecialDeposit = async (e) => {
+    e.preventDefault();
+
+    const BNBamount = parseFloat(e.target.elements[0].value);
+    const tx = await bank.current.specialDeposit({
+      value: ethers.utils.parseEther(String(BNBamount)),
+      gasLimit: 6721975,
+      gasPrice: 20000000000,
+    });
+
+    await tx.wait();
+    await fetchBalances(); // Actualizar balances después del retiro
+  };
+
+  let clickSpecialWithdraw = async () => {
+
+    try {
+      const tx = await bank.current.specialWithdraw({
+        value: ethers.utils.parseEther('0.05'),
+        gasLimit: 6721975,
+        gasPrice: 20000000000,
+      });
+      await tx.wait();
+      await fetchBalances(); // Actualizar balances después del retiro
+    } catch (error) {
+      console.error("Error during withdrawal:", error);
+    }
+  };
   return (
-    <div className="center">
-      <h1>Bank</h1>
-      <p>Saldo depositado (BNB): {bnbBalance}</p>
-      <p>Interés generado (BMIW): {tokenInterest}</p>
-      <form className="center" onSubmit={(e) => onSubmitDeposit(e)}>
-        <input type="number" step="0.01" placeholder="Monto en BNB" />
-        <button type="submit">Depositar</button>
-      </form>
-      <button onClick={clickWithdraw}>Retirar</button>
+    <div className="df">
+      <div>
+        <h1>Bank</h1>
+
+        <p>Saldo depositado (BNB): {bnbBalance}</p>
+        <p>Interés generado (BMIW): {tokenInterest}</p>
+        <form onSubmit={(e) => onSubmitDeposit(e)}>
+          <input type="number" step="0.01" placeholder="Monto en BNB" />
+          <button type="submit">Depositar</button>
+        </form>
+        <button onClick={clickWithdraw}>Retirar</button>
+      </div>
+      <div>
+        <h1>Special Bank</h1>
+
+        <p>Saldo depositado (BNB): {bnbBalanceSpecial}</p>
+        <p>Interés generado (BMIW): {tokenInterestSpecial}</p>
+        <form onSubmit={(e) => onSubmitSpecialDeposit(e)}>
+          <input type="number" step="0.01" placeholder="Monto en BNB" />
+          <button type="submit">Depósito Especial</button>
+        </form>
+        <button onClick={() => clickSpecialWithdraw()}>Retiro Especial</button>
+      </div>
     </div>
   )
 
