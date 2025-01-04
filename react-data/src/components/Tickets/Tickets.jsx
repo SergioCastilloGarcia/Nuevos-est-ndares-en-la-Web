@@ -12,6 +12,8 @@ function Tickets() {
   const [tikets, setTikets] = useState([]);
   const [contractBalance, setContractBalance] = useState(0);
   const [balanceWei, setBalanceWei] = useState(0);
+  const [userBalance, setUserBalance] = useState('0');
+  const [isBalanceSufficient, setIsBalanceSufficient] = useState(false);
 
   useEffect(() => {
     initContracts();
@@ -23,6 +25,7 @@ function Tickets() {
     if (tiketsFromBlockchain != null)
       setTikets(tiketsFromBlockchain)
     await fetchBalances();
+    await fetchUserBalance();
   }
 
   let configureBlockchain = async () => {
@@ -45,19 +48,27 @@ function Tickets() {
     } catch (error) { }
   }
   let clickBuyTiket = async (i) => {
-    const tx = await myContract.current.buyTiket(i, {
-      value: ethers.utils.parseEther("0.02"),
-      gasLimit: 6721975,
-      gasPrice: 20000000000,
+    if (!isBalanceSufficient) {
+      alert('No tienes suficiente balance para comprar el tiket.');
+      return;
+    }
 
-    });
+    try {
+      const tx = await myContract.current.buyTiket(i, {
+        value: ethers.utils.parseEther('0.02'),
+        gasLimit: 6721975,
+        gasPrice: 20000000000,
+      });
 
-    await tx.wait();
+      await tx.wait();
 
-    const tiketsUpdated = await myContract.current.getTikets();
-    setTikets(tiketsUpdated);
-    await fetchBalances();
-  }
+      await fetchTikets();
+      await fetchBalances();
+      await fetchUserBalance(); // Actualizamos el balance del usuario tras la compra
+    } catch (error) {
+      console.error('Error comprando tiket:', error);
+    }
+  };
   let withdrawBalance = async () => {
     const tx = await myContract.current.transferBalanceToAdmin();
     await tx.wait();
@@ -82,32 +93,69 @@ function Tickets() {
       console.error('Error obteniendo balances:', error);
     }
   };
+  let fetchUserBalance = async () => {
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const userAddress = await signer.getAddress();
+      const balance = await provider.getBalance(userAddress);
+
+      // Convertimos el balance a Ether
+      const balanceInEth = ethers.utils.formatEther(balance);
+      setUserBalance(balanceInEth);
+
+      // Comprobamos si el balance es suficiente
+      setIsBalanceSufficient(parseFloat(balanceInEth) >= 0.02);
+    } catch (error) {
+      console.error('Error obteniendo balance del usuario:', error);
+    }
+  };
   return (
-    <div>
-      <h1>Tikets store</h1>
-      <p><strong>Balance Real del Contrato (ETH):</strong> {contractBalance}</p>
-      <p><strong>Balance almacenado en balanceWei (Wei):</strong> {balanceWei}</p>
-      <button onClick={() => withdrawBalance()}>Withdraw Balance</button>
+    <div className="df">
 
-      <ul>
-        {tikets.map((address, i) =>
-          <li>Tiket {i} comprado por {address}
-            {address == ethers.constants.AddressZero &&
-              <a href="#" onClick={() => clickBuyTiket(i)}> buy</a>}
-
-          </li>
+      <div>
+        <h1>Tickets</h1>
+        <p><strong>Tu Balance (ETH):</strong> {userBalance}</p>
+        {!isBalanceSufficient && (
+          <p style={{ color: 'red' }}>No tienes suficiente balance para realizar una compra.</p>
         )}
-      </ul>
+      </div>
 
-      <form onSubmit={(e) => changeAdmin(e)}>
+      <div>
+        <h2>Tikets Disponibles</h2>
+        <ul>
+          {tikets.map((owner, index) => (
+            <li key={index}>
+              <strong>Tiket {index}:</strong> {owner || 'Disponible'}
+              {owner === '0x0000000000000000000000000000000000000000' && (
+                <button
+                  onClick={() => clickBuyTiket(index)}
+                  disabled={!isBalanceSufficient} // Deshabilita si el balance es insuficiente
+                >
+                  Comprar
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
 
-        <input type="text" />
-        <button type="submit" > Donate </button>
-      </form>
-
+      <div>
+        <h2>Acciones de Admin</h2>
+        <p><strong>Balance Real del Contrato (ETH):</strong> {contractBalance}</p>
+        <p><strong>Balance almacenado en balanceWei (Wei):</strong> {balanceWei}</p>
+        <button onClick={withdrawBalance}>Retirar Balance</button>
+        <form onSubmit={changeAdmin} className="dfv">
+          <label>
+            Cambiar Admin:
+            <input type="text" placeholder="Nueva dirección de Admin" />
+          </label>
+          <button type="submit">Cambiar</button>
+        </form>
+      </div>
     </div>
-  )
-
+  );
 }
+
 
 export default Tickets
