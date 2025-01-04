@@ -31,7 +31,7 @@ function Bank() {
       provider = new ethers.providers.Web3Provider(provider);
       const signer = provider.getSigner();
       bank.current = new Contract(
-        "0xe182F62FEA7EEe69D9AB117bba23085F5D7b6e49",
+        "0x5c649De39ed9cCe816694E15e681EA91311A4e29",
         bankManifest.abi,
         signer
       );
@@ -44,7 +44,6 @@ function Bank() {
 
     const BNBamount = parseFloat(e.target.elements[0].value);
 
-    // Wei to BNB se pasa con ethers.utils recibe un String!!!
     const tx = await bank.current.deposit({
       value: ethers.utils.parseEther(String(BNBamount)),
       gasLimit: 6721975,
@@ -57,7 +56,11 @@ function Bank() {
 
   let clickWithdraw = async (e) => {
     try {
-      const tx = await bank.current.withdraw();
+      const tx = await bank.current.withdraw({
+        value: ethers.utils.parseEther('0.05'),
+        gasLimit: 6721975,
+        gasPrice: 20000000000,
+      });
       await tx.wait();
       await fetchBalances(); // Actualizar balances después del retiro
     } catch (error) {
