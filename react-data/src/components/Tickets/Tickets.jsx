@@ -1,4 +1,3 @@
-
 import detectEthereumProvider from "@metamask/detect-provider";
 import { Contract, ethers } from "ethers";
 import myContractManifest from "../../contracts/MyContract.json";

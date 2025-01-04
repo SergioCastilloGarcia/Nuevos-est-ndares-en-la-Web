@@ -9,14 +9,17 @@ import bankManifest from "../../contracts/Bank.json";
 
 function Bank() {
   const bank = useRef(null);
+  const [bnbBalance, setBnbBalance] = useState("0");
+  const [tokenInterest, setTokenInterest] = useState("0");
 
 
   useEffect(() => {
-    initContracts();
+    initContracts();// Consultar el saldo y los intereses al inicializar
   }, [])
 
   let initContracts = async () => {
     await getBlockchain();
+    await fetchBalances();
   }
 
   let getBlockchain = async () => {
@@ -28,7 +31,7 @@ function Bank() {
       provider = new ethers.providers.Web3Provider(provider);
       const signer = provider.getSigner();
       bank.current = new Contract(
-        "0x3AeED28a69848fe71c8EFde153fa0634A6107925",
+        "0xe182F62FEA7EEe69D9AB117bba23085F5D7b6e49",
         bankManifest.abi,
         signer
       );
@@ -49,22 +52,44 @@ function Bank() {
     });
 
     await tx.wait();
+    await fetchBalances(); // Actualizar balances después del depósito
   }
 
   let clickWithdraw = async (e) => {
-    await await bank.current.withdraw();
+    try {
+      const tx = await bank.current.withdraw();
+      await tx.wait();
+      await fetchBalances(); // Actualizar balances después del retiro
+    } catch (error) {
+      console.error("Error during withdrawal:", error);
+    }
   }
+  let fetchBalances = async () => {
+    if (!bank.current) return;
 
+    try {
+      // Consultar saldo en BNB depositado
+      const bnbBalance = await bank.current.getDepositBalance();
+      setBnbBalance(ethers.utils.formatEther(bnbBalance));
+
+      // Consultar interés generado en tokens
+      const tokenInterest = await bank.current.calculateInterest();
+      setTokenInterest(ethers.utils.formatUnits(tokenInterest, 18)); // Reducir escala de wei a entero
+
+    } catch (error) {
+      console.error("Error fetching balances:", error);
+    }
+  };
   return (
-    <div>
+    <div className="center">
       <h1>Bank</h1>
-      <form onSubmit={(e) => onSubmitDeposit(e)} >
-        <input type="number" step="0.01" />
-        <button type="submit">Deposit</button>
-        <button onClick={() => clickWithdraw()} > Withdraw </button>
-
+      <p>Saldo depositado (BNB): {bnbBalance}</p>
+      <p>Interés generado (BMIW): {tokenInterest}</p>
+      <form className="center" onSubmit={(e) => onSubmitDeposit(e)}>
+        <input type="number" step="0.01" placeholder="Monto en BNB" />
+        <button type="submit">Depositar</button>
       </form>
-
+      <button onClick={clickWithdraw}>Retirar</button>
     </div>
   )
 
