@@ -39,7 +39,7 @@ function Tickets() {
         const signer = provider.getSigner();
 
         myContract.current = new Contract(
-          '0xfC851cE9B6dE23EeFC72655BBbE23FB12BC94f38',
+          '0x1EfB2211e5C1465c1C2F0dE618b0cB798AbD639a',
           myContractManifest.abi,
           signer
         );
@@ -62,7 +62,8 @@ function Tickets() {
 
       await tx.wait();
 
-      await fetchTikets();
+      const tiketsUpdated = await myContract.current.getTikets();
+      setTikets(tiketsUpdated);
       await fetchBalances();
       await fetchUserBalance(); // Actualizamos el balance del usuario tras la compra
     } catch (error) {
@@ -73,6 +74,7 @@ function Tickets() {
     const tx = await myContract.current.transferBalanceToAdmin();
     await tx.wait();
     await fetchBalances();
+    await fetchUserBalance();
   }
   let changeAdmin = async (e) => {
     //evita que avance a la página del formulario
