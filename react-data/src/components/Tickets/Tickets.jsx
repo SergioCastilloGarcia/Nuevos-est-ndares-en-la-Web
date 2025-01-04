@@ -10,6 +10,8 @@ import { useState, useEffect, useRef } from 'react';
 function Tickets() {
   const myContract = useRef(null);
   const [tikets, setTikets] = useState([]);
+  const [contractBalance, setContractBalance] = useState(0);
+  const [balanceWei, setBalanceWei] = useState(0);
 
   useEffect(() => {
     initContracts();
@@ -20,6 +22,7 @@ function Tickets() {
     let tiketsFromBlockchain = await myContract.current?.getTikets();
     if (tiketsFromBlockchain != null)
       setTikets(tiketsFromBlockchain)
+    await fetchBalances();
   }
 
   let configureBlockchain = async () => {
@@ -33,7 +36,7 @@ function Tickets() {
         const signer = provider.getSigner();
 
         myContract.current = new Contract(
-          '0x23FDBF472ec9Bd4201Dd8b6774670bDF901Df2D0',
+          '0xfC851cE9B6dE23EeFC72655BBbE23FB12BC94f38',
           myContractManifest.abi,
           signer
         );
@@ -53,9 +56,12 @@ function Tickets() {
 
     const tiketsUpdated = await myContract.current.getTikets();
     setTikets(tiketsUpdated);
+    await fetchBalances();
   }
   let withdrawBalance = async () => {
     const tx = await myContract.current.transferBalanceToAdmin();
+    await tx.wait();
+    await fetchBalances();
   }
   let changeAdmin = async (e) => {
     //evita que avance a la página del formulario
@@ -65,10 +71,22 @@ function Tickets() {
     await myContract.current.changeAdmin(adminAdress);
   };
 
+  let fetchBalances = async () => {
+    try {
+      const [realBalance, storedBalanceWei] = await myContract.current.getBalanceInfo();
 
+      // Convertimos BigNumber a formato legible
+      setContractBalance(ethers.utils.formatEther(realBalance)); // Balance real en Ether
+      setBalanceWei(ethers.utils.formatUnits(storedBalanceWei, 'wei')); // Balance almacenado en Wei
+    } catch (error) {
+      console.error('Error obteniendo balances:', error);
+    }
+  };
   return (
     <div>
       <h1>Tikets store</h1>
+      <p><strong>Balance Real del Contrato (ETH):</strong> {contractBalance}</p>
+      <p><strong>Balance almacenado en balanceWei (Wei):</strong> {balanceWei}</p>
       <button onClick={() => withdrawBalance()}>Withdraw Balance</button>
 
       <ul>
@@ -81,7 +99,8 @@ function Tickets() {
         )}
       </ul>
 
-      <form className="form-inline" onSubmit={(e) => changeAdmin(e)}>
+      <form onSubmit={(e) => changeAdmin(e)}>
+
         <input type="text" />
         <button type="submit" > Donate </button>
       </form>
