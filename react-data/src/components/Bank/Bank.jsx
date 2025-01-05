@@ -127,7 +127,7 @@ function Bank() {
   return (
     <div className="df">
       <div>
-        <a href='/'>Volver</a>
+        <a href='/Nuevos-est-ndares-en-la-Web/'>Volver</a>
         <h1>Bank</h1>
 
         <p>Saldo depositado (BNB): {bnbBalance}</p>

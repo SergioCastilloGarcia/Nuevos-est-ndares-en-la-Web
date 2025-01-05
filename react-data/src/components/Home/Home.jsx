@@ -7,9 +7,9 @@ function Home() {
     <div>
       <h1>Sergio Castillo García - UO276436</h1>
       <ul >
-        <li><a href='/tickets'>Tickets</a></li>
-        <li><a href='/bank'>Banco</a></li>
-        <li><a href='/propiedades'>Propiedades</a></li>
+        <li><a href="#/tickets">Tickets</a></li>
+        <li><a href="#/bank">Banco</a></li>
+        <li><a href="#/propiedades">Propiedades</a></li>
 
       </ul>
 

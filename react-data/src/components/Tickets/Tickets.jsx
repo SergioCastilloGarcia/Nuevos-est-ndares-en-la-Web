@@ -115,7 +115,7 @@ function Tickets() {
     <div className="df">
 
       <div>
-        <a href='/'>Volver</a>
+        <a href='/Nuevos-est-ndares-en-la-Web/'>Volver</a>
         <h1>Tickets</h1>
         <p><strong>Tu Balance (ETH):</strong> {userBalance}</p>
         {!isBalanceSufficient && (

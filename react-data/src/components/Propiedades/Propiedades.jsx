@@ -91,7 +91,7 @@ function Propiedades() {
   };
   return (
     <div>
-      <a href='/'>Volver</a>
+      <a href='/Nuevos-est-ndares-en-la-Web/'>Volver</a>
       <div>
         <h1>RealState</h1>
         <h2>Add RealState</h2>
