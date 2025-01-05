@@ -5,12 +5,12 @@ import detectEthereumProvider from "@metamask/detect-provider";
 import { Contract, ethers } from "ethers";
 import { useState, useEffect, useRef } from 'react';
 import realStateContractManifest from "../../contracts/RealStateContract.json";
-import realStateContractCitiesManifest from "../../contracts/RealStateContractCities.json";
+import realStateContractRegistrationsManifest from "../../contracts/RealStateContractRegistrations.json";
 
 
 
 function Propiedades() {
-  const realStateCities = useRef(null);
+  const realStateRegistrations = useRef(null);
   const realState = useRef(null);
   const [realStateArray, setRealStateArray] = useState([])
   useEffect(() => {
@@ -29,14 +29,9 @@ function Propiedades() {
 
       provider = new ethers.providers.Web3Provider(provider);
       const signer = provider.getSigner();
-      realState.current = new Contract(
-        '0xAde4e77983fe5b307E5111cE51cc73e271E1d584',
-        realStateContractManifest.abi,
-        signer
-      );
-      realStateCities.current = new Contract(
-        "0xcE626e667d3C833e09605460D81a44324C484751",
-        realStateContractCitiesManifest.abi,
+      realStateRegistrations.current = new Contract(
+        "0x778f12DEe5e86F7CBD55Fc12010307f01eBD40f2",
+        realStateContractRegistrationsManifest.abi,
         signer
       );
 
@@ -46,7 +41,7 @@ function Propiedades() {
   let onSubmitAddRealState = async (e) => {
     e.preventDefault();
 
-    const tx = await realStateCities.current.addRealState({
+    const tx = await realStateRegistrations.current.addRealState({
       city: e.target.elements[0].value,
       street: e.target.elements[1].value,
       number: parseInt(e.target.elements[2].value),
@@ -61,17 +56,25 @@ function Propiedades() {
   let onSubmitSearchRealState = async (e) => {
     e.preventDefault();
 
-    let city = e.target.elements[0].value;
+    let registration = parseInt(e.target.elements[0].value);
 
-    let newProperties = await realStateCities.current.getRealStateByCity(city);
-    setRealStateArray(newProperties)
+    try {
+      let property = await realStateRegistrations.current.getRealStateByRegistration(registration);
+      setRealStateArray([property]);
+    } catch (error) {
+      console.error("Property not found", error);
+      setRealStateArray([]);
+    }
   }
-
   let clickOnDeleteRealState = async (registration) => {
 
-    const tx = await realState.current.deleteRealStateByRegistration(registration);
-    await tx.wait();
-    setRealStateArray([])
+    try {
+      const tx = await realStateRegistrations.current.deleteRealStateByRegistration(registration);
+      await tx.wait();
+      setRealStateArray([])
+    } catch (error) {
+      console.error("Property not found", error);
+    }
   }
 
   return (
@@ -89,7 +92,7 @@ function Propiedades() {
       </form>
       <h2>Search RealState</h2>
       <form onSubmit={(e) => onSubmitSearchRealState(e)} >
-        <input type="text" placeholder="city" />
+        <input type="number" placeholder="registration" />
         <button type="submit">Search</button>
       </form>
 
