@@ -30,7 +30,7 @@ function Propiedades() {
       provider = new ethers.providers.Web3Provider(provider);
       const signer = provider.getSigner();
       realStateRegistrations.current = new Contract(
-        "0xa2e467Ef32Ec16FF90002bd318d6462Ce122B4b8",
+        "0xc4e0e46caE3ba3ce15150b61a398C7f8Af59c1ca",
         realStateContractRegistrationsManifest.abi,
         signer
       );
@@ -91,6 +91,7 @@ function Propiedades() {
   };
   return (
     <div>
+      <a href='/'>Volver</a>
       <div>
         <h1>RealState</h1>
         <h2>Add RealState</h2>

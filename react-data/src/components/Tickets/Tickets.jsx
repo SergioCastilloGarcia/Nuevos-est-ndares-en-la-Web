@@ -38,7 +38,7 @@ function Tickets() {
         const signer = provider.getSigner();
 
         myContract.current = new Contract(
-          '0x1EfB2211e5C1465c1C2F0dE618b0cB798AbD639a',
+          '0x1dd142CAc5090a895b2D87a84b668e566Df252bA',
           myContractManifest.abi,
           signer
         );
@@ -115,6 +115,7 @@ function Tickets() {
     <div className="df">
 
       <div>
+        <a href='/'>Volver</a>
         <h1>Tickets</h1>
         <p><strong>Tu Balance (ETH):</strong> {userBalance}</p>
         {!isBalanceSufficient && (

@@ -33,7 +33,7 @@ function Bank() {
       provider = new ethers.providers.Web3Provider(provider);
       const signer = provider.getSigner();
       bank.current = new Contract(
-        "0xB296b3141Dcc96E80DeAd1e144d547846DbA1500",
+        "0x07A6255C94E227e39f8e508902AaFbCF9e16e113",
         bankManifest.abi,
         signer
       );
@@ -127,6 +127,7 @@ function Bank() {
   return (
     <div className="df">
       <div>
+        <a href='/'>Volver</a>
         <h1>Bank</h1>
 
         <p>Saldo depositado (BNB): {bnbBalance}</p>
